@@ -42,6 +42,17 @@ class Content_process():
         if update_top_num:
             self.topic_num = len(self.title_name)
 
+    def printTitleTOfile(self, hash_id2list):
+        import codecs
+        topic_file = codecs.open('topic_file.txt', 'w')
+        for i in range(len(self.vector_table)):
+            topic_file.write(str(i)+'\n')
+            print i
+            for j in self.vector_table[i]:
+                print self.title_name[hash_id2list[j]]
+                topic_file.write(self.title_name[hash_id2list[j]]+'\n')
+        topic_file.close()
+
     # 使用jieba进行分词以及词性提取
     def use_jieba(self):
         import jieba.posseg as pseg
@@ -96,15 +107,11 @@ class Content_process():
             if t_set_id >= 0:
                 t_set = self.find_deep(index, tfidf_less, lsa, tfidf[i], t_set, hash_id2list)
         logging.info("print set... "+str(len(self.vector_table)))
-        for i in range(len(self.vector_table)):
-            print i
-            for j in self.vector_table[i]:
-                print self.title_name[hash_id2list[j]]
+        self.printTitleTOfile(hash_id2list)
         draw_title.draw_topic(self.vector_table, 30, '2015-09-25', '2015-10-10')
 
     def dbscan_lsa(self, begin='2015-09-25', end='2015-11-25', num=10000):
         from draw_data import draw_data
-        import codecs
         draw_title = draw_data()
         lsa = models.LsiModel.load('model.lsa', mmap='r')
         logging.info("load lsa model!!")
@@ -114,8 +121,10 @@ class Content_process():
         self.title_id = []
         self.get_data(num=3000)
         (tfidf, dictionary) = self.get_tfidf(True, num=3000)
+        #self.get_data(num=3000)
+        #(tfidf, dictionary) = self.get_tfidf(False)
 
-        hash_id2list = dict()
+        hash_id2list = dict() # 保存id -> 下标 similar_matrix中对应使用
         for i in range(len(self.title_id)):
             hash_id2list[self.title_id[i]] = i
         
@@ -134,23 +143,16 @@ class Content_process():
                     print self.title_name[i]
                     self.vector_table.append(t_set)
         logging.info("print set... "+str(len(self.vector_table)))
-        topic_file = codecs.open('topic_file.txt', 'w')
-        for i in range(len(self.vector_table)):
-            topic_file.write(str(i)+'\n')
-            print i
-            for j in self.vector_table[i]:
-                print self.title_name[hash_id2list[j]]
-                topic_file.write(self.title_name[hash_id2list[j]]+'\n')
-        topic_file.close()
+        self.printTitleTOfile(hash_id2list)
         draw_title.draw_topic(self.vector_table, 30, '2015-09-25', '2015-10-10')
 
     def find_deep_dbscan(self, index, tfidf, lsa, temptfidf, allset, hash_id2list):
         sims = index[lsa[temptfidf]]
         sims = sorted(enumerate(sims), key=lambda item: -item[1])
         subset = set()
-        if len([i for i in sims if i[1] >= 0.83]) > 7:
+        if len([i for i in sims if i[1] >= 0.85]) > 7:
             for j in sims:
-                if j[1] > 0.83: 
+                if j[1] > 0.85: 
                     subset.add(self.title_id[j[0]])
                     print str(j) + '**' + self.title_name[j[0]]
                 elif j[1] < 0.7:
@@ -225,10 +227,7 @@ class Content_process():
             if t_set_id >= 0:
                 t_set = self.find_deep(index, tfidf_less, lda, tfidf[i], t_set, hash_id2list)
         logging.info("print set... "+str(len(self.vector_table)))
-        for i in range(len(self.vector_table)):
-            print i
-            for j in self.vector_table[i]:
-                print self.title_name[hash_id2list[j]]
+        self.printTitleTOfile(hash_id2list)
         draw_title.draw_topic(self.vector_table, 30, '2015-09-25', '2015-11-20')
 
     # 去掉频率为1的词
@@ -258,10 +257,10 @@ class Content_process():
         tfidf = models.TfidfModel(corpus) 
         return (tfidf[corpus], dictionary)
 
-    def lsa_model(self, use_old_dicdict = True): 
+    def lsa_model(self, use_old_dicdict = True, topic_num = 50): 
         self.get_data(num=3000)
         (tfidf, dictionary) = self.get_tfidf(use_old_dicdict, num=3000)
-        self.topic_num = 20
+        self.topic_num = topic_num
         lsa = models.lsimodel.LsiModel(corpus=tfidf, id2word=dictionary,
         num_topics=self.topic_num)
         lsa.print_topics(self.topic_num)
@@ -286,7 +285,7 @@ if __name__ == "__main__":
     #cp.lda_model(False)
     #cp.similarty()
     #cp.similarty_all()
-    #cp.lsa_model()
+    #cp.lsa_model(False,50)
     #cp.similarty_lsa()
-    #cp.lda_model(False)
+    #cp.lda_model()
     cp.dbscan_lsa()
