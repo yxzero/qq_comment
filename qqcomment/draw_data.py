@@ -30,6 +30,13 @@ class draw_data():
             {"num": { "$gt": limit_num }, "title_time": { "$gt": begin_time, "$lt": last_time } }
         ).sort([("title_time", pymongo.ASCENDING)])
 
+    def get_comment_data(self, begin_time, last_time):
+        return self.db.CommentItem.find( {"time": { "$gt": begin_time, "$lt":
+            last_time } } )
+
+    def title_comment(self, titleid):
+        return self.db.CommentItem.find( {"title_id" : titleid} )
+
     def draw_topic(self, topic_set, temp_k, begin_time, last_time):
         from matplotlib import pyplot as plt
         import numpy as np
