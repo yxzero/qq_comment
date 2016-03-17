@@ -242,7 +242,7 @@ class Content_process():
     def get_tfidf(self, use_old_dicdict = True, begin='2015-09-25',
     end='2015-11-25', num=10000):
         cuted_t = self.use_jieba()
-        cuted_t = self.del_ones(cuted_t)
+        #cuted_t = self.del_ones(cuted_t)
         # dictionary = corpora.Dictionary(cuted_t)
         if use_old_dicdict:
             dictionary = corpora.Dictionary.load('deerwester.dict')
@@ -258,8 +258,8 @@ class Content_process():
         return (tfidf[corpus], dictionary)
 
     def lsa_model(self, use_old_dicdict = True, topic_num = 50): 
-        self.get_data(num=3000)
-        (tfidf, dictionary) = self.get_tfidf(use_old_dicdict, num=3000)
+        self.get_data(num=500)
+        (tfidf, dictionary) = self.get_tfidf(use_old_dicdict, num=500)
         self.topic_num = topic_num
         lsa = models.lsimodel.LsiModel(corpus=tfidf, id2word=dictionary,
         num_topics=self.topic_num)
@@ -285,7 +285,7 @@ if __name__ == "__main__":
     #cp.lda_model(False)
     #cp.similarty()
     #cp.similarty_all()
-    #cp.lsa_model(False,50)
+    cp.lsa_model(False,100)
     #cp.similarty_lsa()
     #cp.lda_model()
-    cp.dbscan_lsa()
+    #cp.dbscan_lsa()

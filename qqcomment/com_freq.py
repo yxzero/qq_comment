@@ -60,8 +60,27 @@ class Comment_freq():
         logging.info('合并之后: ' + str(len(comments_t)))
         return comments_t
 
+def count_day(begin='2015-09-25',days=60):
+    import datetime
+    from matplotlib import pyplot as plt
+    import numpy as np
+    from draw_data import draw_data
+    Comment = draw_data()
+    begin = datetime.datetime.strptime(begin, '%Y-%m-%d')
+    end = begin + datetime.timedelta(days=1)
+    len_comment = []
+    for i in range(days):
+        comments_temp = Comment.get_comment_data(str(begin), str(end))
+        len_comment.append(comments_temp.count())
+        tempend = end
+        end = end + datetime.timedelta(days=1)
+        begin = tempend
+    plt.bar(range(len(len_comment)), len_comment, width=1,align='edge', color='green')
+    plt.show()
+
 if __name__ == '__main__':
-    cf = Comment_freq()
-    comments_t = cf.get_data()
-    cf.print_and_sorted(comments_t)
+    #cf = Comment_freq()
+    #comments_t = cf.get_data()
+    #cf.print_and_sorted(comments_t)
+    count_day()
     
